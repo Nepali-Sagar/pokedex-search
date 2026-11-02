@@ -3,38 +3,26 @@ import { useState } from "react";
 interface Pokemon {
   id: number;
   name: string;
+  sprites: {
+    front_default: string | null;
+  };
 }
 
 export default function HomePage() {
-  const [inputValue, setInputValue] = useState<Pokemon | null>(null);
-  const [pokemons, setPokemons] = useState([]);
-
-  async function fetchData() {
-    try {
-      const response = await fetch(
-        `https://pokeapi.co/api/v2/pokemon/${inputValue}`,
-      );
-      if (!response.ok) {
-        console.log("Can't fetch data");
-      }
-
-      const data = await response.json();
-
-      setPokemons({
-        id: data.id,
-        name: data.name
-      });
-      
-    } catch {
-      console.error("Error");
-    }
-  }
+  const [inputValue, setInputValue] = useState("");
+  const [pokemons, setPokemons] = useState<Pokemon | null>(null);
 
   const searchData = async (e: React.FormEvent) => {
     e.preventDefault();
 
     console.log("Click");
-    fetchData();
+    // fetchData();
+
+    fetch(`https://pokeapi.co/api/v2/pokemon/${inputValue}`)
+      .then((res) => res.json())
+      .then((data: Pokemon) => {
+        setPokemons(data);
+      });
   };
 
   return (
@@ -50,17 +38,27 @@ export default function HomePage() {
         </form>
       </div>
 
-      <div className="content">
-        <div className="character-img">
-          <span></span>
+      {pokemons ? (
+        <div className="content">
+          <div className="character-img">
+            <img
+              src={pokemons.sprites.front_default ?? ""}
+              alt="pokemon image"
+              width={120}
+            />
+          </div>
+          <div className="character-details">
+            <h1>Pokemon Details</h1>
+
+            <p
+              key={pokemons.id}
+              id="character-name"
+            >{`Name: ${pokemons.name}`}</p>
+          </div>
         </div>
-        <div className="character-details">
-          <h1>Pokemon Details</h1>
-          {/* {pokemons.map((pokemon) => (
-              <p key={pokemon.id} id="character-name">{`Name: ${pokemon.name}`}</p>
-          ))} */}
-        </div>
-      </div>
+      ) : (
+        <p>Not found</p>
+      )}
     </main>
   );
 }
